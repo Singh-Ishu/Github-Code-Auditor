@@ -3,10 +3,19 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, Request, HTTPException, Header
 import hashlib
 import hmac
+import redis
+import json
 
 load_dotenv()
 
 WEBHOOK_SECRET = os.getenv("WEBHOOK_SECRET")
+
+HOST = "localhost"
+PORT = 6379
+DB = 0
+DECODE_RESPONES_BOOL = True
+
+redis_client = redis.Redis(host = HOST,port = PORT,db = DB,decode_responses = DECODE_RESPONES_BOOL)
 app = FastAPI()
 
 def verify_signature(payload_body, secret_token, signature_header):
@@ -33,5 +42,14 @@ async def receive_trigger(request: Request, x_hub_signature_256: str = Header(No
             "message": f"Action '{action}' ignored. Only processing {allowed_actions}"
         }
 
-    
+    job_data = {
+        "repo_name": payload["repository"]["full_name"],
+        "pr_number": payload["number"],
+        "action": action,
+        "commit_sha": payload["pull_request"]["head"]["sha"],
+        "clone_url": payload["repository"]["clone_url"]
+    }
+
+
+    redis_client.rpush("commit_queue", json.dumps(job_data))
     return {"status": "success", "message": "Starting processing of the PR"}
