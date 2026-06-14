@@ -37,6 +37,7 @@ async def receive_trigger(request: Request, x_hub_signature_256: str = Header(No
     allowed_actions = ("opened","synchronized")
 
     if action not in allowed_actions:
+        print(f"Ignoring the trigger as only {allowed_actions} are allowed where as the trigger of type {action}")
         return {
             "status": "ignored", 
             "message": f"Action '{action}' ignored. Only processing {allowed_actions}"
@@ -52,4 +53,5 @@ async def receive_trigger(request: Request, x_hub_signature_256: str = Header(No
 
 
     redis_client.rpush("commit_queue", json.dumps(job_data))
+    print("Added to commit queue")
     return {"status": "success", "message": "Starting processing of the PR"}
