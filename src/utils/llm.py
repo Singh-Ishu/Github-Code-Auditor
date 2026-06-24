@@ -4,7 +4,6 @@ import json
 import httpx
 from dotenv import load_dotenv
 
-# Look for .env two directories up (project root)
 env_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".env"))
 load_dotenv(dotenv_path=env_path)
 
