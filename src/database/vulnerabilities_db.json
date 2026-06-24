@@ -1,0 +1,74 @@
+[
+  {
+    "id": "sql_injection",
+    "title": "SQL Injection (SQLi)",
+    "description": "Untrusted user input is directly concatenated or interpolated into a SQL command string instead of using parameterized queries, allowing attackers to execute arbitrary SQL statements.",
+    "severity": "CRITICAL",
+    "matching_keywords": ["sql", "query", "select", "execute", "cursor", "db", "database", "where", "insert", "update", "delete", "f\"", "format", "interpolate", "concat", "connection"],
+    "example_flaw": "query = f\"SELECT * FROM users WHERE username = '{user_input}'\"\ncursor.execute(query)",
+    "example_fix": "query = \"SELECT * FROM users WHERE username = %s\"\ncursor.execute(query, (user_input,))"
+  },
+  {
+    "id": "command_injection",
+    "title": "OS Command Injection",
+    "description": "User input is passed directly to system shells or commands without proper sanitization or without using safe API execution wrappers, permitting execution of arbitrary OS commands.",
+    "severity": "CRITICAL",
+    "matching_keywords": ["os.system", "subprocess", "popen", "shell=True", "exec", "eval", "sh", "bash", "run", "command", "system", "ping"],
+    "example_flaw": "subprocess.run(f\"ping -c 1 {ip_address}\", shell=True)",
+    "example_fix": "subprocess.run([\"ping\", \"-c\", \"1\", ip_address], shell=False)"
+  },
+  {
+    "id": "hardcoded_secrets",
+    "title": "Hardcoded Credentials or Secrets",
+    "description": "Sensitive credentials, passwords, API tokens, encryption keys, or secrets are hardcoded in the codebase instead of being stored in environment variables or configuration files.",
+    "severity": "CRITICAL",
+    "matching_keywords": ["api_key", "password", "secret", "token", "jwt", "key", "auth", "private_key", "credentials", "bearer", "ghp_", "nvapi-", "aws_access_key"],
+    "example_flaw": "API_KEY = \"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\"",
+    "example_fix": "import os\nAPI_KEY = os.getenv(\"API_KEY\")"
+  },
+  {
+    "id": "path_traversal",
+    "title": "Path Traversal (Directory Traversal)",
+    "description": "Accepting file paths from users without checking if they contain traversal sequences (like '../') or ensuring they remain inside the intended directory boundary.",
+    "severity": "CRITICAL",
+    "matching_keywords": ["open", "file", "path", "read", "write", "directory", "join", "os.path", "send_file", "filename"],
+    "example_flaw": "with open(os.path.join(\"uploads\", filename), \"r\") as f:\n    data = f.read()",
+    "example_fix": "safe_path = os.path.abspath(os.path.join(\"uploads\", filename))\nif not safe_path.startswith(os.path.abspath(\"uploads\")):\n    raise PermissionError(\"Access denied\")\nwith open(safe_path, \"r\") as f:\n    data = f.read()"
+  },
+  {
+    "id": "xss",
+    "title": "Cross-Site Scripting (XSS)",
+    "description": "User input is rendered on a webpage without escaping or sanitization, allowing attackers to inject malicious scripts that execute in the victim's browser context.",
+    "severity": "WARNING",
+    "matching_keywords": ["html", "render", "template", "safe", "dangerouslySetInnerHTML", "innerhtml", "script", "escape", "sanitize", "input", "response"],
+    "example_flaw": "return HTMLResponse(f\"<div>Hello {name}</div>\")",
+    "example_fix": "from html import escape\nreturn HTMLResponse(f\"<div>Hello {escape(name)}</div>\")"
+  },
+  {
+    "id": "csrf",
+    "title": "Cross-Site Request Forgery (CSRF)",
+    "description": "State-changing operations are allowed without verifying an anti-CSRF token or validation header, permitting third-party sites to perform unauthorized actions on behalf of the user.",
+    "severity": "WARNING",
+    "matching_keywords": ["post", "cookie", "session", "csrf", "token", "samesite", "action", "form", "validate"],
+    "example_flaw": "app.add_middleware(SessionMiddleware, secret_key=\"secret\")",
+    "example_fix": "app.add_middleware(SessionMiddleware, secret_key=\"secret\")\n# Enable CSRF middleware or set SameSite=Strict cookies"
+  },
+  {
+    "id": "ssrf",
+    "title": "Server-Side Request Forgery (SSRF)",
+    "description": "The application makes arbitrary outgoing HTTP/network requests to a URL supplied by the user, exposing internal systems, metadata endpoints, or local networks.",
+    "severity": "WARNING",
+    "matching_keywords": ["request", "get", "post", "fetch", "url", "client", "httpx", "urllib", "curl", "webhook", "proxy"],
+    "example_flaw": "response = httpx.get(user_supplied_url)",
+    "example_fix": "if not is_safe_url(user_supplied_url):\n    raise ValueError(\"Invalid URL\")\nresponse = httpx.get(user_supplied_url)"
+  },
+  {
+    "id": "insecure_cors",
+    "title": "Insecure CORS Policy",
+    "description": "The application configures Cross-Origin Resource Sharing (CORS) with a wildcard origin ('*') combined with credential support or allows untrusted origins, exposing sensitive data to other websites.",
+    "severity": "WARNING",
+    "matching_keywords": ["cors", "origin", "allow_origins", "middleware", "headers", "credential", "*"],
+    "example_flaw": "allow_origins=[\"*\"], allow_credentials=True",
+    "example_fix": "allow_origins=[\"https://trustedapp.com\"], allow_credentials=True"
+  }
+]
