@@ -43,9 +43,12 @@ while True:
         # Fetch only the code changes
         raw_diff = fetch_pr_diff(repo_name, pr_number)
         
-        print(f"[Success] Retrived diff ({len(raw_diff)} characters)")
+        print(f"[Success] Retrieved diff ({len(raw_diff)} characters)")
         
-        #Pass to Orchestrator Agent
+        # Pass to Orchestrator Agent
+        from src.pipeline import run_agent_pipeline
+        commit_sha = job.get('commit_sha', 'head')
+        run_agent_pipeline(repo_name, pr_number, commit_sha, raw_diff)
         
     except Exception as e:
         print(f"[Error] Failed to process job: {e}")
