@@ -94,10 +94,13 @@ def run_refactor_agent(repo_name: str, commit_sha: str, filename: str, hunk: dic
 
     retries = 3
     for attempt in range(retries):
+        print(f"\n[Refactor Agent] Running attempt {attempt+1}/{retries} for file: {filename}")
         try:
             response_text = llm.query_llm(system_prompt, user_prompt)
+            print(f"[Refactor Agent] Raw LLM Response for {filename} (Attempt {attempt+1}):\n{response_text}\n" + "-"*50)
             result = llm.parse_json_safely(response_text)
             refactors = result.get("refactors", [])
+            print(f"[Refactor Agent] Parsed {len(refactors)} refactoring blocks")
             
             if not refactors:
                 return []
@@ -109,6 +112,7 @@ def run_refactor_agent(repo_name: str, commit_sha: str, filename: str, hunk: dic
                 start_line = ref["start_line"]
                 end_line = ref["end_line"]
                 suggested_code = ref["suggested_code"]
+                print(f"[Refactor Agent] Verifying block range: lines {start_line}-{end_line}")
                 
                 if not isinstance(start_line, int) or not isinstance(end_line, int):
                     all_valid = False
@@ -133,7 +137,7 @@ def run_refactor_agent(repo_name: str, commit_sha: str, filename: str, hunk: dic
                 print(f"[Refactor Success] Refactor patches compiled successfully for {filename} on attempt {attempt+1}")
                 return refactors
             else:
-                print(f"[Refactor Sandbox Fail] Attempt {attempt+1} failed with error: {failed_error}")
+                print(f"[Refactor Sandbox Fail] Attempt {attempt+1} failed with error:\n{failed_error}")
                 system_prompt = (
                     "You are a code refactoring agent inside a compilation reflection loop.\n"
                     "You previously suggested a refactoring patch, but when we tried to compile it, the compiler returned an error.\n"

@@ -44,10 +44,15 @@ def run_security_agent(filename: str, hunk_text: str) -> list:
     )
 
     user_prompt = f"Filename: {filename}\nCode Hunk:\n{hunk_text}\n\n{rag_context}"
+    print(f"\n[Security Agent] Analyzing file: {filename}")
+    if historical_flaws:
+        print(f"[Security Agent] RAG context matches found: {[f['title'] for f in historical_flaws]}")
     try:
         response_text = llm.query_llm(system_prompt, user_prompt)
+        print(f"[Security Agent] Raw LLM Response for {filename}:\n{response_text}\n" + "-"*50)
         result = llm.parse_json_safely(response_text)
         alerts = result.get("alerts", [])
+        print(f"[Security Agent] Parsed {len(alerts)} alerts for {filename}")
         for a in alerts:
             a["file"] = filename
         return alerts

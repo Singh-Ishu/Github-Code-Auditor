@@ -37,13 +37,14 @@ def submit_github_comments(repo_name: str, pr_number: int, commit_sha: str, comm
             unique_comments.append(c)
 
     if not unique_comments:
-        print("[Post-Processor] No comments/suggestions generated for this PR.")
-        return True
+        review_body = "🤖 **GitHub Code Auditor Bot**\nCompleted code analysis waves. No style violations or security vulnerabilities were identified in the changes. Everything looks clean! ✨"
+    else:
+        review_body = "🤖 **GitHub Code Auditor Bot**\nCompleted code analysis waves. Inline reviews and suggestions have been published."
 
     payload = {
         "commit_id": commit_sha,
         "event": "COMMENT",
-        "body": "🤖 **GitHub Code Auditor Bot**\nCompleted code analysis waves. Inline reviews and suggestions have been published.",
+        "body": review_body,
         "comments": unique_comments
     }
 

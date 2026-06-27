@@ -26,10 +26,13 @@ def run_linter_agent(filename: str, hunk_text: str) -> list:
     )
 
     user_prompt = f"Filename: {filename}\nCode Hunk:\n{hunk_text}"
+    print(f"\n[Linter Agent] Analyzing file: {filename}")
     try:
         response_text = llm.query_llm(system_prompt, user_prompt)
+        print(f"[Linter Agent] Raw LLM Response for {filename}:\n{response_text}\n" + "-"*50)
         result = llm.parse_json_safely(response_text)
         violations = result.get("violations", [])
+        print(f"[Linter Agent] Parsed {len(violations)} violations for {filename}")
         for v in violations:
             v["file"] = filename
         return violations
